@@ -1,13 +1,15 @@
 import pandas as pd
 import json
+import numpy as np
+
+pd.options.mode.chained_assignment = None  # default='warn
 
 df = pd.read_csv('/Users/caleb/git/big_data_project2/ml-latest-small/movies.csv')
 genre_df = df['genres'].apply(lambda x: x.split("|"))
-
+users = pd.read_csv('/Users/caleb/git/big_data_project2/ml-latest-small/ratings.csv')
 ############################ FUNCTIONS ########################################
 def query_genre():
     wanted_genre = 'NULL'
-
     uniques = []
     for x in genre_df:
         if x:
@@ -63,14 +65,45 @@ def query_genre():
         print()
 
     return True
+
+def top_genres(user):
+    top = {}
+    for movie in user['genres']:
+        gens = movie.split('|')
+        for genre in gens:
+            if genre not in top.keys():
+                top[genre] = 1
+            else:
+                top[genre] += 1
+
+    top_sorted = dict(sorted(top.items(), key=lambda item: item[1]))
+    return top_sorted
+
+def show_genres(res):
+    print("TOP " + str(len(res)) + " GENRES:\n")
+    for e in res:
+        print(e)
+
 ###############################################################################
+
 if __name__ == "__main__":
     flag = False
 
-    print("\n\t\t\tWelcome to the Recommender System 6000!\n")
-    print("What are you looking for today?\n")
-    print("1: Genres, 2: Authors, 3: Popularity, 4: ")
+    personId = input('Enter a user ID from 1 - 610: ')
+    print("\nRecommendation range: 1 - 10\n")
+    rec_cnt  = input('Enter the number of recommendations you wish to see: ')
+    user = users[users['userId'] == int(personId)]
+    titles = []
+    genres = []
+    for id in user['movieId']:
+        titles.append(df.loc[df['movieId'] == id]['title'].values[0])
+        genres.append(df.loc[df['movieId'] == id]['genres'].values[0])
+    user.loc[:,'title']  = titles
+    user.loc[:,'genres'] = genres
+    user.sort_values(by=['rating'])
+    res = list(top_genres(user).keys())[(-1*int(rec_cnt)):]
+    show_genres(res)
 
-    while(not flag):
-        if(query_genre()):
-            flag = True
+    # while(not flag):
+    #     if(query_genre()):
+    #         flag = True
