@@ -77,7 +77,7 @@ def top_genres(user):
                 top[genre] += 1
 
     top_sorted = dict(sorted(top.items(), key=lambda item: item[1]))
-    return top_sorted
+    return list(top_sorted.keys())
 
 def show_genres(res):
     print("TOP " + str(len(res)) + " GENRES:\n")
@@ -89,10 +89,10 @@ def show_genres(res):
 if __name__ == "__main__":
     flag = False
 
-    personId = input('Enter a user ID from 1 - 610: ')
+    personId = int(input('\nEnter a user ID from 1 - 610: '))
     print("\nRecommendation range: 1 - 10\n")
-    rec_cnt  = input('Enter the number of recommendations you wish to see: ')
-    user = users[users['userId'] == int(personId)]
+    rec_cnt  = int(input('Enter the number of recommendations you wish to see: '))
+    user = users[users['userId'] == personId]
     titles = []
     genres = []
     for id in user['movieId']:
@@ -101,7 +101,8 @@ if __name__ == "__main__":
     user.loc[:,'title']  = titles
     user.loc[:,'genres'] = genres
     user.sort_values(by=['rating'])
-    res = list(top_genres(user).keys())[(-1*int(rec_cnt)):]
+    res = top_genres(user)[::-1][:rec_cnt]
+
     show_genres(res)
 
     # while(not flag):
